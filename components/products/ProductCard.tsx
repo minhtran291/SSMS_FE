@@ -1,5 +1,5 @@
 import { IMAGE_BASE_URL } from '@/lib/api';
-import { ProductDTO } from '@/types/product.type';
+import type { ProductDTO } from '@/types/product.type';
 import Image from 'next/image';
 
 interface Props {
@@ -11,16 +11,16 @@ export default function ProductCard({ product }: Props) {
 
     return (
         <div className="border rounded-lg p-4">
-            {
+
+            <div className='relative aspect-square'>
                 <Image
                     unoptimized={process.env.NODE_ENV === 'development'}
                     src={`${IMAGE_BASE_URL}${firstImage.imageUrl}`}
                     alt={product.productName}
                     className="object-cover rounded"
-                    width={400}
-                    height={240}
+                    fill
                 />
-            }
+            </div>
 
             <div className="mt-4">
                 <h2 className="text-xl font-bold">

@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '@/lib/api';
-import { ProductDTO } from '@/types/product.type';
+import type { ProductDTO } from '@/types/product.type';
 import { z } from 'zod';
 
 const ImageDTOSchema = z.object({
