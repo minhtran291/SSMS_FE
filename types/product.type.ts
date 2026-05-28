@@ -1,3 +1,13 @@
+export interface ProductList {
+    id: number;
+    productName: string;
+    categoryName: string;
+    brandName: string;
+    thumbnail: string;
+    price: number;
+    size: number;
+}
+
 export interface ImageDTO {
     imageUrl: string;
 }
