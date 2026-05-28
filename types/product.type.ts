@@ -8,21 +8,22 @@ export interface ProductList {
     size: number;
 }
 
-export interface ImageDTO {
+export interface Image {
     imageUrl: string;
 }
 
-export interface SizePriceDTO {
+export interface SizePrice {
     size: number;
     price: number;
 }
 
-export interface ProductDTO {
+export interface ProductDetail {
     id: number;
     productName: string;
     description?: string;
     categoryName: string;
     brandName: string;
-    productImages: ImageDTO[];
-    productSizePrices: SizePriceDTO[];
+    // productImages: Image[];
+    productImages: string[];
+    productSizePrices: SizePrice[];
 }
