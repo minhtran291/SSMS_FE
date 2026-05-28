@@ -1,29 +1,18 @@
 import { API_BASE_URL } from '@/lib/api';
-import type { ProductDTO } from '@/types/product.type';
+import type { ProductList } from '@/types/product.type';
 import { z } from 'zod';
 
-const ImageDTOSchema = z.object({
-    imageUrl: z.string(),
-});
-
-const SizePriceDTOSchema = z.object({
-    size: z.number(),
-    price: z.number(),
-});
-
-const ProductDTOSchema = z.object({
+const ProductListSchema = z.object({
     id: z.number(),
     productName: z.string(),
-    description: z.string().optional(),
     categoryName: z.string(),
     brandName: z.string(),
-    productImages: z.array(ImageDTOSchema),
-    productSizePrices: z.array(SizePriceDTOSchema),
+    thumbnail: z.string(),
+    price: z.number(),
+    size: z.number(),
 });
 
-const ProductsArraySchema = z.array(ProductDTOSchema);
-
-export async function getProducts(): Promise<ProductDTO[]> {
+export async function getProducts(): Promise<ProductList[]> {
     const response = await fetch(`${API_BASE_URL}/Product`, {
         cache: 'no-store',
         signal: AbortSignal.timeout(10000),
@@ -35,9 +24,11 @@ export async function getProducts(): Promise<ProductDTO[]> {
 
     const data = await response.json();
 
-    try {
-        return ProductsArraySchema.parse(data);
-    } catch (error) {
-        throw new Error(`Invalid product data format: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    const result = ProductListSchema.array().safeParse(data);
+
+    if (!result.success) {
+        throw new Error('Invalid product data format', result.error);
     }
+
+    return result.data;
 }

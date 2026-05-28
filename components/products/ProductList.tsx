@@ -1,8 +1,8 @@
-import type { ProductDTO } from '@/types/product.type';
+import type { ProductList } from '@/types/product.type';
 import ProductCard from './ProductCard';
 
 interface Props {
-    products: ProductDTO[];
+    products: ProductList[];
 }
 
 export default function ProductList({ products }: Props) {
