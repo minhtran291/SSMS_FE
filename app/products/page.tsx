@@ -1,4 +1,4 @@
-import ProductList from '@/components/products/ProductList';
+import ProductList from '@/components/products/product-list/ProductList';
 import { getProducts } from '@/services/product.service';
 
 export default async function ProductsPage() {

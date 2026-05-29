@@ -1,4 +1,4 @@
-import ProductDetail from '@/components/products/ProductDetail';
+import ProductDetail from '@/components/products/product-detail/ProductDetail';
 import { getProductById } from '@/services/product.service';
 
 type Props = {
