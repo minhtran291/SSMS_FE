@@ -2,6 +2,7 @@ import { IMAGE_BASE_URL } from '@/lib/api';
 import type { ProductList } from '@/types/product.type';
 import Image from 'next/image';
 import Link from 'next/link';
+import { formatCurrency } from '@/lib/format';
 
 interface Props {
     product: ProductList;
@@ -40,7 +41,7 @@ export default function ProductCard({ product }: Props) {
                     </p>
 
                     <p className="mt-2 font-semibold">
-                        Giá: {product.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+                        Giá: {formatCurrency(product.price)}
                     </p>
                 </div>
             </div>
