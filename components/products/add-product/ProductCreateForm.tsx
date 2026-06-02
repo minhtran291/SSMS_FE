@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { ProductFormData } from '@/types/product.type';
 import { API_BASE_URL } from '@/lib/api';
 
@@ -24,14 +24,15 @@ export default function ProductCreateForm({ formData }: Props) {
     ]);
 
     const [images, setImages] = useState<{
-        file: File | null;
-        displayOrder: number;
-    }[]>([
-        {
-            file: null,
-            displayOrder: 0,
-        }
-    ])
+        file: File;
+        preview: string;
+    }[]>([])
+
+    const allowTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+    ]
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -74,7 +75,7 @@ export default function ProductCreateForm({ formData }: Props) {
 
             data.append(
                 `Images[${index}].DisplayOrder`,
-                item.displayOrder.toString()
+                (index + 1).toString()
             );
         });
 
@@ -92,6 +93,51 @@ export default function ProductCreateForm({ formData }: Props) {
         }
 
         alert("Thêm sản phẩm thành công");
+    }
+
+    const handleAddImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files ?? []);
+
+        // e.target.files tra ve 1 FileList hoac null
+        // phai chuyen thanh array de su dung cac method cua array
+
+        const invalidFiles = files.filter(
+            file => !allowTypes.includes(file.type)
+        );
+
+        // filter kiem tra tung object trong mang theo dk
+        // dung thi lay ko thi bo qua
+        // mang .includes de kiem tra xem 1 value co trong mang hay ko
+
+        if (invalidFiles.length > 0) {
+            alert("Có file ảnh không hợp lệ. Vui lòng chọn file có định dạng .jpg, .jpeg, .png hoặc .webp");
+
+            e.target.value = "";
+            return;
+        }
+
+        setImages(prev => [
+            ...prev,
+            ...files.map(file => ({
+                file,
+                preview: URL.createObjectURL(file)
+            }))
+        ]);
+
+        // lay toan bo object truoc dai vao mang
+        // lay toan bo object trong fil dai vao mang
+        // map di qua tung object trong file va tra ve 1 object moi
+        // thong thuong dung {} thi phai return, vi {} la than ham
+        // dung ({}) de return nhanh 1 object luon
+
+        e.target.value = "";
+        // reset lai gia tri cua file nhap vao
+        // neu ko reset thi bi kieu chon 1 file roi xoa
+        // roi chon lai file do thi onChange se k dc kich hoat
+    };
+
+    const handleRemoveImage = (index: number) => {
+        setImages(prev => prev.filter((_, i) => i !== index));
     }
 
     return (
@@ -164,7 +210,7 @@ export default function ProductCreateForm({ formData }: Props) {
 
             <div>
                 <div className="mb-2 flex items-center justify-between">
-                    <label htmlFor="" className="font-medium">
+                    <label>
                         Kích thước và giá
                     </label>
 
@@ -174,7 +220,8 @@ export default function ProductCreateForm({ formData }: Props) {
                             setSizePrices(prev => [...prev, {
                                 sizeId: formData.sizes[0]?.id ?? 0,
                                 price: 1000,
-                            }])}>
+                            }])}
+                        className="cursor-pointer bg-blue-500 text-white rounded p-1">
                         Thêm
                     </button>
                 </div>
@@ -215,7 +262,8 @@ export default function ProductCreateForm({ formData }: Props) {
                             type="button"
                             onClick={() =>
                                 setSizePrices(prev =>
-                                    prev.filter((_, i) => i !== index))}>
+                                    prev.filter((_, i) => i !== index))}
+                            className="bg-red-500 rounded text-white p-1">
                             Xóa
                         </button>
                     </div>
@@ -227,63 +275,54 @@ export default function ProductCreateForm({ formData }: Props) {
                     <label className="font-medium">
                         Hình ảnh
                     </label>
-
-                    <button
-                        type="button"
-                        onClick={() =>
-                            setImages(prev => [
-                                ...prev,
-                                {
-                                    file: null,
-                                    displayOrder: prev.length
-                                }
-                            ])
-                        }>
-                        Thêm
-                    </button>
                 </div>
 
-                {images.map((image, index) => (
-                    <div
-                        key={index}
-                        className="mb-2 flex gap-2">
+                <div className="grid grid-cols-3 gap-4">
+                    {images.map((image, index) => (
+                        <div
+                            key={index}
+                            className="relative aspect-square overflow-hidden rounded border">
+                            <img
+                                src={image.preview}
+                                alt=""
+                                className="h-full w-full object-cover" />
 
+                            <button
+                                type="button"
+                                onClick={() => handleRemoveImage(index)}
+                                className="absolute right-2 top-2 h-6 w-6 rounded-full bg-red-500 text-white cursor-pointer">
+                                &times;
+                            </button>
+
+                            <div className="absolute left-2 bottom-2 rounded bg-black/60
+                                px-2 py-1 text-xs text-white">
+                                #{index + 1}
+                            </div>
+                        </div>
+                    ))}
+
+                    <label htmlFor="image-upload" className="flex aspect-square cursor-pointer items-center rounded
+                        border-2 border-dashed border-gray-300 text-gray-500 justify-center">
                         <input
+                            id="image-upload"
                             type="file"
+                            multiple
+                            hidden
                             accept=".jpg,.jpeg,.png,.webp"
-                            onChange={(e) => {
-                                const file = e.target.files?.[0] ?? null;
+                            onChange={handleAddImage} />
 
-                                const newImages = [...images];
-                                newImages[index].file = file;
-                                setImages(newImages);
-                            }}
-                        />
+                        <div className="text-center">
+                            <div className="text-2xl">
+                                +
+                            </div>
 
-                        <input
-                            type="number"
-                            value={image.displayOrder}
-                            onChange={(e) => {
-                                const newImages = [...images];
-                                newImages[index].displayOrder =
-                                    Number(e.target.value);
+                            <div>
+                                Thêm hình ảnh
+                            </div>
+                        </div>
+                    </label>
+                </div>
 
-                                setImages(newImages);
-                            }}
-                            className="border rounded px-3 py-2"
-                        />
-
-                        <button
-                            type="button"
-                            onClick={() =>
-                                setImages(prev =>
-                                    prev.filter((_, i) => i !== index)
-                                )
-                            }>
-                            Xóa
-                        </button>
-                    </div>
-                ))}
             </div>
 
             <button
