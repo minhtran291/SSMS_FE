@@ -27,3 +27,24 @@ export interface ProductDetail {
     productImages: string[];
     productSizePrices: SizePrice[];
 }
+
+export interface CategoryOption {
+    id: number;
+    categoryName: string;
+}
+
+export interface BrandOption {
+    id: number;
+    brandName: string;
+}
+
+export interface SizeOption {
+    id: number;
+    value: number;
+}
+
+export interface ProductFormData {
+    categories: CategoryOption[];
+    brands: BrandOption[];
+    sizes: SizeOption[];
+}
