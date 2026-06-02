@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '@/lib/api';
-import type { ProductList, ProductDetail, ProductFormData } from '@/types/product.type';
+import type { ProductList, ProductDetail, ProductFormData, CreateProductRequest } from '@/types/product.type';
 import { z } from 'zod';
 
 const PRODUCT_PATH: string = 'Product';
@@ -111,4 +111,65 @@ export async function getProductFormData(): Promise<ProductFormData> {
     }
 
     return result.data;
+}
+
+export async function createProduct(request: CreateProductRequest): Promise<number> {
+    const data = new FormData();
+
+    data.append("ProductName", request.productName);
+
+    if (request.description?.trim()) {
+        data.append("Description", request.description);
+    }
+
+    data.append(
+        "CategoryId",
+        request.categoryId.toString()
+    );
+
+    data.append(
+        "BrandId",
+        request.brandId.toString()
+    );
+
+    request.sizePrices.forEach((item, index) => {
+        data.append(
+            `SizePrices[${index}].SizeId`,
+            item.sizeId.toString()
+        );
+
+        data.append(
+            `SizePrices[${index}].Price`,
+            item.price.toString()
+        );
+    });
+
+    request.images.forEach((item, index) => {
+        data.append(
+            `Images[${index}].Image`,
+            item.file
+        );
+
+        data.append(
+            `Images[${index}].DisplayOrder`,
+            (index + 1).toString()
+        );
+    });
+
+    const response = await fetch(`${API_BASE_URL}/${PRODUCT_PATH}`,
+        {
+            method: 'POST',
+            body: data,
+            signal: AbortSignal.timeout(10000),
+        }
+    );
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message);
+    }
+
+    const productId = await response.json();
+
+    return productId;
 }

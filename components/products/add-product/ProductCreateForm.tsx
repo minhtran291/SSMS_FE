@@ -2,13 +2,15 @@
 
 import React, { useState } from 'react';
 import { ProductFormData } from '@/types/product.type';
-import { API_BASE_URL } from '@/lib/api';
+import { createProduct } from '@/services/product.service';
+import { useRouter } from 'next/navigation';
 
 type Props = {
     formData: ProductFormData;
 }
 
 export default function ProductCreateForm({ formData }: Props) {
+    const router = useRouter();
     const [productName, setProductName] = useState('');
     const [description, setDescription] = useState('');
 
@@ -37,62 +39,26 @@ export default function ProductCreateForm({ formData }: Props) {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const data = new FormData();
+        try {
+            const productId = await createProduct({
+                productName,
+                description,
+                categoryId,
+                brandId,
+                sizePrices,
+                images: images.map((image, index) => ({
+                    file: image.file,
+                    displayOrder: index + 1,
+                }))
+            });
 
-        data.append("ProductName", productName);
-        data.append("Description", description);
+            alert("Thêm sản phẩm thành công");
 
-        data.append(
-            "CategoryId",
-            categoryId.toString()
-        );
-
-        data.append(
-            "BrandId",
-            brandId.toString()
-        );
-
-        sizePrices.forEach((item, index) => {
-            data.append(
-                `SizePrices[${index}].SizeId`,
-                item.sizeId.toString()
-            );
-
-            data.append(
-                `SizePrices[${index}].Price`,
-                item.price.toString()
-            );
-        });
-
-        images.forEach((item, index) => {
-            if (!item.file)
-                return;
-
-            data.append(
-                `Images[${index}].Image`,
-                item.file
-            );
-
-            data.append(
-                `Images[${index}].DisplayOrder`,
-                (index + 1).toString()
-            );
-        });
-
-        const response = await fetch(
-            `${API_BASE_URL}/Product`,
-            {
-                method: "POST",
-                body: data
-            }
-        );
-
-        if (!response.ok) {
-            console.log(await response.json());
-            return;
+            router.push(`/products/${productId}`);
         }
-
-        alert("Thêm sản phẩm thành công");
+        catch (error) {
+            console.error(error);
+        }
     }
 
     const handleAddImage = (e: React.ChangeEvent<HTMLInputElement>) => {

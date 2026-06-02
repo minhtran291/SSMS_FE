@@ -48,3 +48,22 @@ export interface ProductFormData {
     brands: BrandOption[];
     sizes: SizeOption[];
 }
+
+export type CreateProductRequest = {
+    productName: string;
+    description?: string;
+    categoryId: number;
+    brandId: number;
+    sizePrices: CreateProductSizePrice[];
+    images: CreateProductImage[];
+}
+
+export interface CreateProductSizePrice {
+    sizeId: number;
+    price: number;
+}
+
+export interface CreateProductImage {
+    file: File;
+    displayOrder: number;
+}
