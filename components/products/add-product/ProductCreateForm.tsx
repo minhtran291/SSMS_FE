@@ -6,6 +6,7 @@ import { createProduct } from '@/services/product.service';
 import { useRouter } from 'next/navigation';
 import { ApiError } from '@/errors/api.error';
 import toast from 'react-hot-toast';
+import SizePriceSection from '@/components/products/SizePriceSection';
 
 type Props = {
     formData: ProductFormData;
@@ -224,91 +225,12 @@ export default function ProductCreateForm({ formData }: Props) {
                 }
             </div>
 
-            <div>
-                <div className="mb-2 flex items-center justify-between">
-                    <label>
-                        Kích thước và giá
-                    </label>
-
-                    <button
-                        type="button"
-                        onClick={() =>
-                            setSizePrices(prev => [...prev, {
-                                sizeId: formData.sizes[0]?.id ?? 0,
-                                price: 1000,
-                            }])}
-                        className="cursor-pointer bg-blue-500 text-white rounded p-1">
-                        Thêm
-                    </button>
-                </div>
-
-                {
-                    errors.SizePrices?.map(error => (
-                        <p
-                            key={error}
-                            className="text-sm text-red-500">
-                            {error}
-                        </p>
-                    ))
-                }
-
-                {sizePrices.map((item, index) => {
-                    const sizeError = errors[`SizePrices[${index}].Price`];
-
-                    return (
-                        <>
-                            {sizeError?.map((error, index) => (
-                                <p
-                                    key={index}
-                                    className="text-sm text-red-500">
-                                    {error}
-                                </p>
-                            ))}
-
-                            <div
-                                key={index}
-                                className="mb-2 flex gap-2">
-                                <select
-                                    value={item.sizeId}
-                                    onChange={(e) => {
-                                        const newItems = [...sizePrices];
-                                        newItems[index].sizeId = Number(e.target.value);
-                                        setSizePrices(newItems);
-                                    }}
-                                    className="border rounded px-3 py-2">
-
-                                    {formData.sizes.map(size => (
-                                        <option
-                                            key={size.id}
-                                            value={size.id}>
-                                            {size.value}
-                                        </option>
-                                    ))}
-                                </select>
-
-                                <input
-                                    type="number"
-                                    value={item.price}
-                                    onChange={(e) => {
-                                        const newItems = [...sizePrices];
-                                        newItems[index].price = Number(e.target.value);
-                                        setSizePrices(newItems);
-                                    }}
-                                    className="border rounded px-3 py-2 w-full" />
-
-                                <button
-                                    type="button"
-                                    onClick={() =>
-                                        setSizePrices(prev =>
-                                            prev.filter((_, i) => i !== index))}
-                                    className="bg-red-500 rounded text-white p-1 cursor-pointer">
-                                    Xóa
-                                </button>
-                            </div>
-                        </>
-                    )
-                })}
-            </div>
+            <SizePriceSection
+                sizes={formData.sizes}
+                sizePrices={sizePrices}
+                setSizePrices={setSizePrices}
+                errors={errors}
+            />
 
             <div>
                 <div className="mb-2 flex items-center justify-between">

@@ -49,7 +49,7 @@ export interface ProductFormData {
     sizes: SizeOption[];
 }
 
-export type CreateProductRequest = {
+export interface CreateProductRequest {
     productName: string;
     description?: string;
     categoryId: number;
