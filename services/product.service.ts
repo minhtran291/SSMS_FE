@@ -1,6 +1,8 @@
 import { API_BASE_URL } from '@/lib/api';
 import type { ProductList, ProductDetail, ProductFormData, CreateProductRequest } from '@/types/product.type';
 import { z } from 'zod';
+import { ApiError } from '@/errors/api.error';
+import type { ApiErrorResponse } from '@/types/api.type';
 
 const PRODUCT_PATH: string = 'Product';
 
@@ -165,11 +167,16 @@ export async function createProduct(request: CreateProductRequest): Promise<numb
     );
 
     if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message);
+        const error: ApiErrorResponse = await response.json();
+
+        throw new ApiError(
+            error.message,
+            error.statusCode,
+            error.errors
+        );
     }
 
-    const productId = await response.json();
+    const dataResponse = await response.json();
 
-    return productId;
+    return dataResponse.id;
 }
