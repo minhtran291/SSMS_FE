@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { ProductFormData } from '@/types/product.type';
 import { createProduct } from '@/services/product.service';
 import { useRouter } from 'next/navigation';
+import { ApiError } from '@/errors/api.error';
+import toast from 'react-hot-toast';
 
 type Props = {
     formData: ProductFormData;
@@ -30,6 +32,8 @@ export default function ProductCreateForm({ formData }: Props) {
         preview: string;
     }[]>([])
 
+    const [errors, setErrors] = useState<Record<string, string[]>>({});
+
     const allowTypes = [
         "image/jpeg",
         "image/png",
@@ -38,6 +42,8 @@ export default function ProductCreateForm({ formData }: Props) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        setErrors({});
 
         try {
             const productId = await createProduct({
@@ -52,12 +58,25 @@ export default function ProductCreateForm({ formData }: Props) {
                 }))
             });
 
-            alert("Thêm sản phẩm thành công");
+            toast.success("Thêm sản phẩm thành công");
 
             router.push(`/products/${productId}`);
         }
         catch (error) {
-            console.error(error);
+            if (
+                error instanceof ApiError &&
+                error.statusCode === 400
+            ) {
+                setErrors(error.errors ?? {});
+                return;
+            }
+
+            if (error instanceof Error) {
+                toast.error(error.message);
+                return;
+            }
+
+            toast.error("Có lỗi xảy ra");
         }
     }
 
@@ -76,7 +95,7 @@ export default function ProductCreateForm({ formData }: Props) {
         // mang .includes de kiem tra xem 1 value co trong mang hay ko
 
         if (invalidFiles.length > 0) {
-            alert("Có file ảnh không hợp lệ. Vui lòng chọn file có định dạng .jpg, .jpeg, .png hoặc .webp");
+            toast.error("Có file ảnh không hợp lệ. Vui lòng chọn file có định dạng .jpg, .jpeg, .png hoặc .webp");
 
             e.target.value = "";
             return;
@@ -106,6 +125,14 @@ export default function ProductCreateForm({ formData }: Props) {
         setImages(prev => prev.filter((_, i) => i !== index));
     }
 
+    const imageErrors = [
+        ...new Set(
+            Object.entries(errors)
+                .filter(([key]) => key.startsWith("Images"))
+                .flatMap(([, messages]) => messages)
+        )
+    ];
+
     return (
         <form
             onSubmit={handleSubmit}
@@ -119,8 +146,15 @@ export default function ProductCreateForm({ formData }: Props) {
                     type="text"
                     value={productName}
                     onChange={(e) => setProductName(e.target.value)}
-                    className="w-full rounded-md border px-3 py-2"
+                    className="w-full rounded-md border px-3 py-2 mb-2"
                 />
+                {errors.ProductName?.map(error => (
+                    <p
+                        key={error}
+                        className="text-sm text-red-500">
+                        {error}
+                    </p>
+                ))}
             </div>
 
             <div>
@@ -144,7 +178,7 @@ export default function ProductCreateForm({ formData }: Props) {
                 <select
                     value={categoryId}
                     onChange={(e) => setCategoryId(Number(e.target.value))}
-                    className="w-full rounded-md border px-3 py-2">
+                    className="w-full rounded-md border px-3 py-2 cursor-pointer">
                     {formData.categories.map(category => (
                         <option
                             key={category.id}
@@ -153,6 +187,13 @@ export default function ProductCreateForm({ formData }: Props) {
                         </option>
                     ))}
                 </select>
+                {errors.CategoryId?.map(error => (
+                    <p
+                        key={error}
+                        className="text-sm text-red-500">
+                        {error}
+                    </p>
+                ))}
             </div>
 
             <div>
@@ -163,7 +204,7 @@ export default function ProductCreateForm({ formData }: Props) {
                 <select
                     value={brandId}
                     onChange={(e) => setBrandId(Number(e.target.value))}
-                    className="w-full rounded-md border px-3 py-2">
+                    className="w-full rounded-md border px-3 py-2 cursor-pointer">
                     {formData.brands.map(brand => (
                         <option
                             key={brand.id}
@@ -172,6 +213,15 @@ export default function ProductCreateForm({ formData }: Props) {
                         </option>
                     ))}
                 </select>
+                {
+                    errors.BrandId?.map(error => (
+                        <p
+                            key={error}
+                            className="text-sm text-red-500">
+                            {error}
+                        </p>
+                    ))
+                }
             </div>
 
             <div>
@@ -192,48 +242,72 @@ export default function ProductCreateForm({ formData }: Props) {
                     </button>
                 </div>
 
-                {sizePrices.map((item, index) => (
-                    <div
-                        key={index}
-                        className="mb-2 flex gap-2">
-                        <select
-                            value={item.sizeId}
-                            onChange={(e) => {
-                                const newItems = [...sizePrices];
-                                newItems[index].sizeId = Number(e.target.value);
-                                setSizePrices(newItems);
-                            }}
-                            className="border rounded px-3 py-2">
+                {
+                    errors.SizePrices?.map(error => (
+                        <p
+                            key={error}
+                            className="text-sm text-red-500">
+                            {error}
+                        </p>
+                    ))
+                }
 
-                            {formData.sizes.map(size => (
-                                <option
-                                    key={size.id}
-                                    value={size.id}>
-                                    {size.value}
-                                </option>
+                {sizePrices.map((item, index) => {
+                    const sizeError = errors[`SizePrices[${index}].Price`];
+
+                    return (
+                        <>
+                            {sizeError?.map((error, index) => (
+                                <p
+                                    key={index}
+                                    className="text-sm text-red-500">
+                                    {error}
+                                </p>
                             ))}
-                        </select>
 
-                        <input
-                            type="number"
-                            value={item.price}
-                            onChange={(e) => {
-                                const newItems = [...sizePrices];
-                                newItems[index].price = Number(e.target.value);
-                                setSizePrices(newItems);
-                            }}
-                            className="border rounded px-3 py-2" />
+                            <div
+                                key={index}
+                                className="mb-2 flex gap-2">
+                                <select
+                                    value={item.sizeId}
+                                    onChange={(e) => {
+                                        const newItems = [...sizePrices];
+                                        newItems[index].sizeId = Number(e.target.value);
+                                        setSizePrices(newItems);
+                                    }}
+                                    className="border rounded px-3 py-2">
 
-                        <button
-                            type="button"
-                            onClick={() =>
-                                setSizePrices(prev =>
-                                    prev.filter((_, i) => i !== index))}
-                            className="bg-red-500 rounded text-white p-1">
-                            Xóa
-                        </button>
-                    </div>
-                ))}
+                                    {formData.sizes.map(size => (
+                                        <option
+                                            key={size.id}
+                                            value={size.id}>
+                                            {size.value}
+                                        </option>
+                                    ))}
+                                </select>
+
+                                <input
+                                    type="number"
+                                    value={item.price}
+                                    onChange={(e) => {
+                                        const newItems = [...sizePrices];
+                                        newItems[index].price = Number(e.target.value);
+                                        setSizePrices(newItems);
+                                    }}
+                                    className="border rounded px-3 py-2 w-full" />
+
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setSizePrices(prev =>
+                                            prev.filter((_, i) => i !== index))}
+                                    className="bg-red-500 rounded text-white p-1 cursor-pointer">
+                                    Xóa
+                                </button>
+                            </div>
+                        </>
+                    )
+                })}
             </div>
 
             <div>
@@ -242,6 +316,14 @@ export default function ProductCreateForm({ formData }: Props) {
                         Hình ảnh
                     </label>
                 </div>
+
+                {imageErrors.map((error, index) => (
+                    <p
+                        key={index}
+                        className="text-sm text-red-500">
+                        {error}
+                    </p>
+                ))}
 
                 <div className="grid grid-cols-3 gap-4">
                     {images.map((image, index) => (
