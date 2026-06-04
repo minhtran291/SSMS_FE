@@ -4,49 +4,20 @@ import { SizeOption, CreateProductSizePrice } from '@/types/product.type';
 type Props = {
     sizes: SizeOption[];
     sizePrices: CreateProductSizePrice[];
-    setSizePrices: React.Dispatch<React.SetStateAction<CreateProductSizePrice[]>>;
     errors: Record<string, string[]>;
+    onAddRow: () => void;
+    onRemoveRow: (index: number) => void;
+    onSizePriceChange: (index: number, field: 'sizeId' | 'price', value: number) => void;
 };
 
 export default function SizePriceSection({
     sizes,
     sizePrices,
-    setSizePrices,
-    errors
+    errors,
+    onAddRow,
+    onRemoveRow,
+    onSizePriceChange
 }: Props) {
-    const handleAdd = () => {
-        setSizePrices(prev => [
-            ...prev,
-            {
-                sizeId: sizes[0]?.id ?? 0,
-                price: 1000,
-            }
-        ]);
-    };
-
-    const handleSizeChange = (
-        index: number,
-        sizeId: number
-    ) => {
-        const newItems = [...sizePrices];
-        newItems[index].sizeId = sizeId;
-        setSizePrices(newItems);
-    };
-
-    const handlePriceChange = (
-        index: number,
-        price: number
-    ) => {
-        const newItems = [...sizePrices];
-        newItems[index].price = price;
-        setSizePrices(newItems);
-    }
-
-    const handleRemove = (index: number) => {
-        setSizePrices(prev =>
-            prev.filter((_, i) => i !== index)
-        );
-    };
 
     return (
         <div>
@@ -57,8 +28,8 @@ export default function SizePriceSection({
 
                 <button
                     type="button"
-                    onClick={handleAdd}
-                    className="cursor-pointer rounded bg-blue-500 p-1 text-white">
+                    onClick={onAddRow}
+                    className="cursor-pointer rounded bg-blue-500 box text-white">
                     Thêm
                 </button>
             </div>
@@ -90,12 +61,7 @@ export default function SizePriceSection({
                         <div className="mb-2 flex gap-2">
                             <select
                                 value={item.sizeId}
-                                onChange={(e) =>
-                                    handleSizeChange(
-                                        index,
-                                        Number(e.target.value)
-                                    )
-                                }
+                                onChange={(e) => onSizePriceChange(index, 'sizeId', Number(e.target.value))}
                                 className="rounded border px-3 py-2">
 
                                 {sizes.map(size => (
@@ -110,18 +76,13 @@ export default function SizePriceSection({
                             <input
                                 type="number"
                                 value={item.price}
-                                onChange={(e) =>
-                                    handlePriceChange(
-                                        index,
-                                        Number(e.target.value)
-                                    )
-                                }
+                                onChange={(e) => onSizePriceChange(index, 'price', Number(e.target.value))}
                                 className="w-full rounded border px-3 py-2"
                             />
 
                             <button
                                 type="button"
-                                onClick={() => handleRemove(index)}
+                                onClick={() => onRemoveRow(index)}
                                 className="cursor-pointer rounded bg-red-500 p-1 text-white">
                                 Xóa
                             </button>
