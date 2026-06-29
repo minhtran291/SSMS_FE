@@ -1,4 +1,3 @@
-import React from "react";
 import { SizeOption, CreateProductSizePrice } from '@/types/product.type';
 
 type Props = {

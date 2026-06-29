@@ -20,7 +20,7 @@ export interface SizePrice {
 export interface ProductDetail {
     id: number;
     productName: string;
-    description?: string;
+    description: string | null;
     categoryName: string;
     brandName: string;
     // productImages: Image[];

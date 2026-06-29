@@ -24,7 +24,7 @@ const SizePriceSchema = z.object({
 const ProductDetailSchema = z.object({
     id: z.number(),
     productName: z.string(),
-    description: z.string().optional(),
+    description: z.string().nullable(),
     categoryName: z.string(),
     brandName: z.string(),
     productImages: z.array(z.string()),
@@ -88,7 +88,9 @@ export async function getProductById(id: number): Promise<ProductDetail> {
     const result = ProductDetailSchema.safeParse(data);
 
     if (!result.success) {
+        console.log(result.error);
         throw new Error('Invalid product detail data format', result.error);
+
     }
 
     return result.data;
