@@ -8,6 +8,7 @@ import { ApiError } from '@/errors/api.error';
 import toast from 'react-hot-toast';
 import SizePriceSection from '../SizePriceSection';
 import ProductImageSection from '../ProductImageSection';
+import ProductInfoSection from "../ProductInfoSection";
 
 type Props = {
     formData: ProductFormData;
@@ -194,6 +195,21 @@ export default function ProductCreateForm({ formData }: Props) {
         );
     };
 
+    const handleProductNameChange = (value: string) => {
+        setProductName(value);
+    }
+
+    const handleDescriptionChange = (value: string) => {
+        setDescription(value);
+    }
+
+    const handleCategoryChange = (value: number) => {
+        setCategoryId(value);
+    }
+
+    const handleBrandChange = (value: number) => {
+        setBrandId(value);
+    }
 
     return (
         <form
@@ -201,7 +217,7 @@ export default function ProductCreateForm({ formData }: Props) {
             className="">
             <div className="mx-auto w-md md:grid gap-6 md:grid-cols-2 md:w-4xl">
                 <div className="space-y-4 p-4">
-                    <div>
+                    {/* <div>
                         <label htmlFor="" className="mb-2 block font-medium">
                             Tên sản phẩm
                         </label>
@@ -286,7 +302,20 @@ export default function ProductCreateForm({ formData }: Props) {
                                 </p>
                             ))
                         }
-                    </div>
+                    </div> */}
+                    <ProductInfoSection
+                        productName={productName}
+                        description={description}
+                        categoryId={categoryId}
+                        brandId={brandId}
+                        categories={formData.categories}
+                        brands={formData.brands}
+                        errors={errors}
+                        onProductNameChange={handleProductNameChange}
+                        onDescriptionChange={handleDescriptionChange}
+                        onCategoryChange={handleCategoryChange}
+                        onBrandChange={handleBrandChange}
+                    />
                 </div>
 
                 <div className="space-y-4 p-4">
