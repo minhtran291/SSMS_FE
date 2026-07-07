@@ -10,7 +10,9 @@ export async function POST(request: NextRequest) {
 
         if (!code || !redirectUri) {
             return NextResponse.json(
-                { error: "Authorization code or redirect URI not found." },
+                {
+                    error: "Authorization code or redirect URI not found.",
+                },
                 { status: 400 }
             );
         }
@@ -29,7 +31,7 @@ export async function POST(request: NextRequest) {
 
         const tokenData = backendRes.data;
 
-        console.log("Token data", tokenData);
+        // console.log("Token data", tokenData);
 
         if (!tokenData) {
             console.error('[Callback] Invalid data structure from backend:', tokenData);
@@ -66,7 +68,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json(
                 {
                     error: 'Backend returned an error (via Axios)',
-                    details: error.response?.data || error.message,
+                    message: error.response?.data || error.message,
                 },
                 { status: error.response?.status || 500 }
             )

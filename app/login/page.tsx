@@ -10,7 +10,7 @@ function LoginContet() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { isAuthenticated } = AuthService();
-    const redirectUrl = searchParams.get('redirect') || 'dashboard';
+    const redirectUrl = searchParams.get('redirect') || '/dashboard';
 
     useEffect(() => {
         if (isAuthenticated()) {
@@ -28,15 +28,13 @@ function LoginContet() {
         keycloakLoginUrl.searchParams.set("state", redirectUrl);
 
         window.location.href = keycloakLoginUrl.toString();
+
         // console.log(keycloakLoginUrl.toString());
 
     }, [router, redirectUrl]);
 
     return (
-        <div className="min-h-screen">
-            <MySpin description="Đang tải cấu hình bảo mật..." fullscreen>
-            </MySpin>
-        </div >
+        <MySpin description="Đang tải cấu hình bảo mật..." fullscreen />
     )
 }
 

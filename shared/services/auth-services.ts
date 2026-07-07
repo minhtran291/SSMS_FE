@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { TTokenResponse } from "../types/auth";
 import api from "./axios-custom";
 
@@ -66,16 +66,24 @@ export const AuthService = () => {
                 }
             );
 
-            if (!res)
-                throw new Error('Failed to exchange token via BFF');
+            // if (!res)
+            //     throw new Error('Failed to exchange token via BFF');
 
             const sessionData: TTokenResponse = res.data;
 
             setSession(sessionData);
 
-        } catch (e) {
+        } catch (error) {
             sessionStorage.removeItem(exchangeKey);
-            throw e;
+
+            if (axios.isAxiosError(error)) {
+
+                throw new Error(
+                    error.response?.data?.error
+                );
+            }
+
+            throw error;
         }
     }
 
