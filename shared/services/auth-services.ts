@@ -1,6 +1,7 @@
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import { TTokenResponse } from "../types/auth";
 import api from "./axios-custom";
+import { useAuthStore } from "../stores/auth-store";
 
 const SESSION_STORAGE_KEY = 'session_data';
 
@@ -71,7 +72,16 @@ export const AuthService = () => {
 
             const sessionData: TTokenResponse = res.data;
 
-            setSession(sessionData);
+            //setSession(sessionData);
+
+            const { setSession } = useAuthStore.getState();
+
+            setSession({
+                accessToken: sessionData.access_token,
+                expiresAt: Date.now() + sessionData.expires_in * 1000,
+                fullName: sessionData.full_name,
+                roles: sessionData.roles
+            });
 
         } catch (error) {
             sessionStorage.removeItem(exchangeKey);
