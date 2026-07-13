@@ -10,13 +10,13 @@ function LoginContet() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { isAuthenticated } = AuthService();
-    const redirectUrl = searchParams.get('redirect') || '/dashboard';
+    const redirectUrl = searchParams.get('redirect') || '/';
 
     useEffect(() => {
-        if (isAuthenticated()) {
-            router.replace(redirectUrl);
-            return;
-        }
+        // if (isAuthenticated()) {
+        //     router.replace(redirectUrl);
+        //     return;
+        // }
         // console.log(keycloak.authorizeUrl);
 
         const keycloakLoginUrl = new URL(keycloak.authorizeUrl);

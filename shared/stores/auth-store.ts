@@ -3,12 +3,16 @@ import { create } from "zustand";
 type AuthState = {
     accessToken: string | null;
     expiresAt: number | null;
+    // firstName: string | null;
+    // lastName: string | null;
     fullName: string | null;
     roles: string[];
 
     setSession: (payload: {
         accessToken: string;
         expiresAt: number;
+        // firstName: string;
+        // lastName: string;
         fullName: string;
         roles: string[];
     }) => void;
@@ -19,6 +23,8 @@ type AuthState = {
 export const useAuthStore = create<AuthState>((set) => ({
     accessToken: null,
     expiresAt: null,
+    // firstName: null,
+    // lastName: null,
     fullName: null,
     roles: [],
 
@@ -26,6 +32,8 @@ export const useAuthStore = create<AuthState>((set) => ({
         set({
             accessToken,
             expiresAt,
+            // firstName,
+            // lastName,
             fullName,
             roles
         }),
@@ -34,6 +42,8 @@ export const useAuthStore = create<AuthState>((set) => ({
         set({
             accessToken: null,
             expiresAt: null,
+            // firstName: null,
+            // lastName: null,
             fullName: null,
             roles: []
         })

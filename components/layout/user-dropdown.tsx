@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import MySpin from "../ant-custom/my-spin";
 import { DownOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/shared/stores/auth-store";
 
 type UserDropDownProps = {
     className?: string;
@@ -19,6 +20,10 @@ export default function UserDropDown(props: UserDropDownProps) {
 
     const [oAuth, setOauth] = useState<any>(null);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+    const fullName = useAuthStore(state => state.fullName);
+
+    console.log(fullName);
 
     const items: MenuProps['items'] = [
         {
@@ -70,7 +75,7 @@ export default function UserDropDown(props: UserDropDownProps) {
                 <Dropdown menu={{ items, onClick: handleMenuClick }}>
                     <div className="flex items-center gap-3 hover:cursor-pointer">
                         <Avatar size={'large'} icon={<User />} className="bg-white!" style={{ color: 'black' }} />
-                        <p className="font-semibold capitalize! text-white m-0!">Hello 123 {oAuth?.full_name}</p>
+                        <p className="font-semibold capitalize! text-white m-0!">Hello {fullName}</p>
                         <DownOutlined style={{ color: '#fff' }} />
                     </div>
                 </Dropdown>
