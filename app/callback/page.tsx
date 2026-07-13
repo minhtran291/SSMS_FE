@@ -13,7 +13,7 @@ function CallbackContent() {
     const { exchangeCodeForToken } = useMemo(() => AuthService(), []);
     const [error, setError] = useState<string | null>(null);
     const code = searchParams.get('code');
-    const state = searchParams.get('state') || '/dashboard';
+    const state = searchParams.get('state') || '/';
 
     useEffect(() => {
         if (!code) {

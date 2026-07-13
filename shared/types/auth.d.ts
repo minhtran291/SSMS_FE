@@ -5,5 +5,7 @@ export type TTokenResponse = {
     // refresh_token?: string;
     token_type: string;
     roles: string[];
+    // first_name: string;
+    // last_name: string;
     full_name: string;
 }

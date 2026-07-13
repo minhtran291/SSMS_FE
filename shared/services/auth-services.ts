@@ -79,6 +79,8 @@ export const AuthService = () => {
             setSession({
                 accessToken: sessionData.access_token,
                 expiresAt: Date.now() + sessionData.expires_in * 1000,
+                // firstName: sessionData.first_name,
+                // lastName: sessionData.last_name,
                 fullName: sessionData.full_name,
                 roles: sessionData.roles
             });
