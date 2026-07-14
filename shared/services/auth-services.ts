@@ -9,48 +9,48 @@ const isBrowser = () => typeof window !== 'undefined';
 
 export const AuthService = () => {
 
-    const setSession = (data: TTokenResponse): void => {
-        if (isBrowser()) {
-            sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(data));
-        }
-    }
+    // const setSession = (data: TTokenResponse): void => {
+    //     if (isBrowser()) {
+    //         sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(data));
+    //     }
+    // }
 
-    const getSession = (): TTokenResponse | null => {
-        if (!isBrowser()) return null;
+    // const getSession = (): TTokenResponse | null => {
+    //     if (!isBrowser()) return null;
 
-        const sessionData = sessionStorage.getItem(SESSION_STORAGE_KEY);
+    //     const sessionData = sessionStorage.getItem(SESSION_STORAGE_KEY);
 
-        return sessionData ? (JSON.parse(sessionData) as TTokenResponse) : null
-    }
+    //     return sessionData ? (JSON.parse(sessionData) as TTokenResponse) : null
+    // }
 
-    const getAccessToken = (): string | null => {
-        return getSession()?.access_token ?? null;
-    }
+    // const getAccessToken = (): string | null => {
+    //     return getSession()?.access_token ?? null;
+    // }
 
-    const isAuthenticated = (): boolean => {
-        return !!getAccessToken();
-    }
+    // const isAuthenticated = (): boolean => {
+    //     return !!getAccessToken();
+    // }
 
-    const setLogout = () => {
-        if (isBrowser()) {
-            sessionStorage.removeItem(SESSION_STORAGE_KEY);
-            Object.keys(sessionStorage).forEach((key) => {
-                if (key.startsWith('kc_exchange_'))
-                    sessionStorage.removeItem(key);
-            })
+    const clearLocalSession = () => {
+        useAuthStore.getState().clearSession();
+
+        if (!isBrowser())
+            return;
+
+        for (const key of Object.keys(sessionStorage)) {
+            if (key.startsWith("kc_exchange_"))
+                sessionStorage.removeItem(key);
         }
     }
 
     const exchangeCodeForToken = async (code: string, redirectUri: string) => {
-        if (!isBrowser()) {
+        if (!isBrowser())
             throw new Error('This function can only be called in a browser environment.');
-        }
 
         const exchangeKey = `kc_exchange_${code}`;
 
-        if (sessionStorage.getItem(exchangeKey) === '1') {
+        if (sessionStorage.getItem(exchangeKey) === '1')
             return;
-        }
 
         sessionStorage.setItem(exchangeKey, '1');
 
@@ -59,7 +59,6 @@ export const AuthService = () => {
                 'api/auth/callback',
                 { code, redirectUri },
                 {
-                    withCredentials: true,
                     headers: {
                         'Content-Type': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest'
@@ -67,12 +66,7 @@ export const AuthService = () => {
                 }
             );
 
-            // if (!res)
-            //     throw new Error('Failed to exchange token via BFF');
-
             const sessionData: TTokenResponse = res.data;
-
-            //setSession(sessionData);
 
             const { setSession } = useAuthStore.getState();
 
@@ -88,12 +82,8 @@ export const AuthService = () => {
         } catch (error) {
             sessionStorage.removeItem(exchangeKey);
 
-            if (axios.isAxiosError(error)) {
-
-                throw new Error(
-                    error.response?.data?.error
-                );
-            }
+            if (axios.isAxiosError(error))
+                throw new Error(error.response?.data?.error);
 
             throw error;
         }
@@ -114,53 +104,43 @@ export const AuthService = () => {
             );
 
             if (!res) {
-                setLogout();
+                // setLogout();
                 return null;
             }
 
             const newSessionData: TTokenResponse = res.data;
-            setSession(newSessionData);
+            // setSession(newSessionData);
             return newSessionData.access_token ?? null;
         }
         catch (error) {
-            setLogout();
+            // setLogout();
             return null;
         }
     }
 
     const logout = async () => {
-        try {
-            await api.post('api/auth/logout');
+        const accessToken = useAuthStore.getState().accessToken;
 
-            await axios.post(
-                'api/auth/logout',
-                {},
-                {
-                    withCredentials: true,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
+        await axios.post(
+            'api/auth/logout',
+            {},
+            {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
                 }
-            );
-        } catch (e) {
-            console.error('Lỗi gọi API logout nội bộ', e);
-        }
-        finally {
-            setLogout();
-            window.location.assign('/');
-            return;
-        }
+            }
+        );
+        clearLocalSession();
     }
 
     return {
         exchangeCodeForToken,
         refreshToken,
         logout,
-        getSession,
-        setSession,
-        setLogout,
-        getAccessToken,
-        isAuthenticated
+        // getSession,
+        // setSession,
+        clearLocalSession,
+        // getAccessToken,
+        // isAuthenticated
     }
 }
