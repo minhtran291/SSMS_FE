@@ -9,15 +9,13 @@ import MySpin from "@/components/ant-custom/my-spin";
 function LoginContet() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { isAuthenticated } = AuthService();
     const redirectUrl = searchParams.get('redirect') || '/';
 
     useEffect(() => {
-        // if (isAuthenticated()) {
-        //     router.replace(redirectUrl);
-        //     return;
-        // }
-        // console.log(keycloak.authorizeUrl);
+        if (AuthService.hasAuthFlag()) {
+            router.replace(redirectUrl);
+            return;
+        }
 
         const keycloakLoginUrl = new URL(keycloak.authorizeUrl);
 

@@ -1,8 +1,6 @@
 import axios, { AxiosError } from "axios";
 import { NextRequest, NextResponse } from "next/server";
-
-const REFRESH_TOKEN_COOKIE_NAME = 'refresh_token'
-const AUTH_FLAG_COOKIE_NAME = 'auth_flag'
+import { REFRESH_TOKEN_COOKIE_NAME, AUTH_FLAG_COOKIE_NAME } from "@/shared/constants/auth";
 
 export async function POST(request: NextRequest) {
     try {
