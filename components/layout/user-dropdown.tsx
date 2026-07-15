@@ -16,7 +16,7 @@ type UserDropDownProps = {
 export default function UserDropDown(props: UserDropDownProps) {
     const router = useRouter();
     const { className } = props;
-    const { logout } = AuthService();
+    const { logout } = AuthService;
 
     const [isLoggingOut, setIsLoggingOut] = useState(false);
 

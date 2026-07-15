@@ -10,12 +10,17 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 function CallbackContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { exchangeCodeForToken } = useMemo(() => AuthService(), []);
+    const { exchangeCodeForToken, hasAuthFlag } = AuthService;
     const [error, setError] = useState<string | null>(null);
     const code = searchParams.get('code');
     const state = searchParams.get('state') || '/';
 
     useEffect(() => {
+        if (hasAuthFlag()) {
+            router.replace(state);
+            return;
+        }
+
         if (!code) {
             setError('Không tìm thấy authorization code. Vui lòng thử đăng nhập lại.');
             return;

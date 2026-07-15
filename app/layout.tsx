@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import "antd/dist/reset.css";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
+import AuthProvider from "./providers/AuthProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,9 +33,11 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <AntdRegistry>
-          {children}
+          <AuthProvider>
+            {children}
+          </AuthProvider>
         </AntdRegistry>
-        <Toaster></Toaster>
+        {/* <Toaster></Toaster> */}
       </body>
     </html>
   );

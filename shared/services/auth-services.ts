@@ -1,49 +1,58 @@
 import axios from "axios";
 import { TTokenResponse } from "../types/auth";
-import api from "./axios-custom";
 import { useAuthStore } from "../stores/auth-store";
-
-const SESSION_STORAGE_KEY = 'session_data';
+import { AUTH_FLAG_COOKIE_NAME } from "../constants/auth";
 
 const isBrowser = () => typeof window !== 'undefined';
 
-export const AuthService = () => {
+const getLocalSession = () => useAuthStore.getState();
 
-    // const setSession = (data: TTokenResponse): void => {
-    //     if (isBrowser()) {
-    //         sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(data));
-    //     }
-    // }
+const getCookie = (name: string) => {
+    if (!isBrowser())
+        return null;
 
-    // const getSession = (): TTokenResponse | null => {
-    //     if (!isBrowser()) return null;
+    return document.cookie
+        .split("; ")
+        .find(cookie => cookie.startsWith(`${name}=`))
+        ?.split("=")[1] ?? null;
+};
 
-    //     const sessionData = sessionStorage.getItem(SESSION_STORAGE_KEY);
+const saveSession = (session: TTokenResponse) => {
+    const { setSession } = getLocalSession();
 
-    //     return sessionData ? (JSON.parse(sessionData) as TTokenResponse) : null
-    // }
+    setSession({
+        accessToken: session.access_token,
+        expiresAt: Date.now() + session.expires_in * 1000,
+        fullName: session.full_name,
+        roles: session.roles,
+    });
+};
 
-    // const getAccessToken = (): string | null => {
-    //     return getSession()?.access_token ?? null;
-    // }
+const clearLocalSession = () => {
+    getLocalSession().clearSession();
 
-    // const isAuthenticated = (): boolean => {
-    //     return !!getAccessToken();
-    // }
+    if (!isBrowser())
+        return;
 
-    const clearLocalSession = () => {
-        useAuthStore.getState().clearSession();
-
-        if (!isBrowser())
-            return;
-
-        for (const key of Object.keys(sessionStorage)) {
-            if (key.startsWith("kc_exchange_"))
-                sessionStorage.removeItem(key);
-        }
+    for (const key of Object.keys(sessionStorage)) {
+        if (key.startsWith("kc_exchange_"))
+            sessionStorage.removeItem(key);
     }
+}
 
-    const exchangeCodeForToken = async (code: string, redirectUri: string) => {
+export const AuthService = {
+
+    getLocalSession,
+
+    getCookie,
+
+    hasAuthFlag: () => {
+        return getCookie(AUTH_FLAG_COOKIE_NAME) === "true"
+    },
+
+    clearLocalSession,
+
+    async exchangeCodeForToken(code: string, redirectUri: string) {
         if (!isBrowser())
             throw new Error('This function can only be called in a browser environment.');
 
@@ -66,81 +75,46 @@ export const AuthService = () => {
                 }
             );
 
-            const sessionData: TTokenResponse = res.data;
-
-            const { setSession } = useAuthStore.getState();
-
-            setSession({
-                accessToken: sessionData.access_token,
-                expiresAt: Date.now() + sessionData.expires_in * 1000,
-                // firstName: sessionData.first_name,
-                // lastName: sessionData.last_name,
-                fullName: sessionData.full_name,
-                roles: sessionData.roles
-            });
-
-        } catch (error) {
-            sessionStorage.removeItem(exchangeKey);
-
-            if (axios.isAxiosError(error))
-                throw new Error(error.response?.data?.error);
-
-            throw error;
-        }
-    }
-
-    const refreshToken = async (): Promise<string | null> => {
-        try {
-            const res = await axios.post(
-                'api/auth/refresh',
-                {},
-                {
-                    withCredentials: true,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                }
-            );
-
-            if (!res) {
-                // setLogout();
-                return null;
-            }
-
-            const newSessionData: TTokenResponse = res.data;
-            // setSession(newSessionData);
-            return newSessionData.access_token ?? null;
+            saveSession(res.data);
         }
         catch (error) {
-            // setLogout();
-            return null;
+            sessionStorage.removeItem(exchangeKey);
+            throw error;
         }
-    }
+    },
 
-    const logout = async () => {
-        const accessToken = useAuthStore.getState().accessToken;
-
-        await axios.post(
-            'api/auth/logout',
+    async refreshToken() {
+        const res = await axios.post(
+            'api/auth/refresh',
             {},
             {
+                withCredentials: true,
                 headers: {
-                    Authorization: `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
             }
         );
-        clearLocalSession();
-    }
 
-    return {
-        exchangeCodeForToken,
-        refreshToken,
-        logout,
-        // getSession,
-        // setSession,
-        clearLocalSession,
-        // getAccessToken,
-        // isAuthenticated
-    }
+        saveSession(res.data);
+    },
+
+    async logout() {
+        const { accessToken } = getLocalSession();
+
+        try {
+            await axios.post(
+                'api/auth/logout',
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                    }
+                }
+            );
+        }
+        finally {
+            clearLocalSession();
+        }
+    },
 }
